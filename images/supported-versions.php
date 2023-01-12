@@ -3,7 +3,7 @@ include_once __DIR__ . '/../include/prepend.inc';
 include_once __DIR__ . '/../include/branches.inc';
 
 // Sizing constants.
-$margin_left = 80;
+$margin_left = 270;
 $margin_right = 50;
 $header_height = 24;
 $year_width = 120;
@@ -11,13 +11,13 @@ $branch_height = 30;
 $footer_height = 24;
 
 function branches_to_show() {
-    // Basically: show all 5.3+ branches with EOL dates > min_date().
+    // Basically: show all 1.13+ branches with EOL dates > min_date().
     $branches = [];
 
     // Flatten out the majors.
     foreach (get_all_branches() as $major_branches) {
         foreach ($major_branches as $branch => $version) {
-            if (version_compare($branch, '5.3', 'ge') && get_branch_security_eol_date($branch) > min_date()) {
+            if (version_compare($branch, '1.13', 'ge') && get_branch_security_eol_date($branch) > min_date()) {
                 $branches[$branch] = $version;
             }
         }
@@ -90,6 +90,11 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 				fill: #9c9;
 			}
 
+			g.future rect,
+			.branches rect.future {
+				fill: #ddd;
+			}
+
 			.branch-labels text {
 				dominant-baseline: central;
 				text-anchor: middle;
@@ -120,9 +125,9 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 	<g class="branch-labels">
 		<?php foreach ($branches as $branch => $version): ?>
 			<g class="<?php echo get_branch_support_state($branch) ?>">
-				<rect x="0" y="<?php echo $version['top'] ?>" width="<?php echo 0.5 * $margin_left ?>" height="<?php echo $branch_height ?>" />
-				<text x="<?php echo 0.25 * $margin_left ?>" y="<?php echo $version['top'] + (0.5 * $branch_height) ?>">
-					<?php echo htmlspecialchars($branch) ?>
+				<rect x="0" y="<?php echo $version['top'] ?>" width="<?php echo 0.8 * $margin_left ?>" height="<?php echo $branch_height ?>" />
+				<text x="<?php echo 0.4 * $margin_left ?>" y="<?php echo $version['top'] + (0.5 * $branch_height) ?>">
+					<?php echo htmlspecialchars(get_branch_name($branch)) ?>
 				</text>
 			</g>
 		<?php endforeach ?>
