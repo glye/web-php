@@ -10,55 +10,31 @@ include_once __DIR__ . '/version.inc';
  *    - security: the end of security support (usually release + 3 years).
  */
 $BRANCHES = [
-    '1.7' => [
-        'name' => 'eZ Platform 2017 LTS (v1.7)',
-        'stable' => '2019-12-01',
-        'security' => '2019-12-01',
+    /* 3.0 is here because version_compare() can't handle the only version in
+     * $OLDRELEASES, and it saves another special case in
+     * get_branch_security_eol_date(). */
+    '3.0' => [
+        'security' => '2000-10-20',
     ],
-    '1.13' => [
-        'name' => 'eZ Platform 2018 LTS (v1.13)',
-        'stable' => '2020-12-01',
-        'security' => '2021-12-01',
+    '5.3' => [
+        'stable' => '2013-07-11',
+        'security' => '2014-08-14',
     ],
-    '2.5' => [
-        'name' => 'eZ Platform 2019 LTS (v2.5)',
-        'stable' => '2022-03-01',
-        'security' => '2024-03-01',
+    '5.4' => [
+        'stable' => '2014-09-14',
+        'security' => '2015-09-03',
     ],
-    '3.3' => [
-        'name' => 'Ibexa DXP 3.3 LTS',
-        'stable' => '2024-01-01',
-        'security' => '2026-01-01',
+    '5.5' => [
+        'stable' => '2015-07-10',
+        'security' => '2016-07-21',
     ],
-    '4.1' => [
-        'name' => 'Ibexa DXP 4.1 FT',
-        'stable' => '2022-06-01',
-        'security' => '2022-08-01',
+    '5.6' => [
+        'stable' => '2017-01-19',
+        'security' => '2018-12-31',
     ],
-    '4.2' => [
-        'name' => 'Ibexa DXP 4.2 FT',
-        'stable' => '2022-11-01',
-        'security' => '2022-12-01',
-    ],
-    '4.3' => [
-        'name' => 'Ibexa DXP 4.3 FT',
-        'stable' => '2023-02-01',
-        'security' => '2023-03-01',
-    ],
-    '4.4' => [
-        'name' => 'Ibexa DXP 4.4 FT',
-        'stable' => '2023-05-01',
-        'security' => '2023-06-01',
-    ],
-    '4.5' => [
-        'name' => 'Ibexa DXP 4.5 FT',
-        'stable' => '2023-08-01',
-        'security' => '2023-09-01',
-    ],
-    '4.6' => [
-        'name' => 'Ibexa DXP 4.6 LTS',
-        'stable' => '2026-06-01',
-        'security' => '2028-06-01',
+    '7.0' => [
+        'stable' => '2018-01-04',
+        'security' => '2019-01-10',
     ],
 ];
 
@@ -308,14 +284,6 @@ function get_final_release($branch) {
 
     // Shrug.
     return null;
-}
-
-function get_branch_name($branch) {
-    if (isset($GLOBALS['BRANCHES'][$branch]['name'])) {
-        return $GLOBALS['BRANCHES'][$branch]['name'];
-    }
-
-    return $branch;
 }
 
 function get_branch_bug_eol_date($branch) {
