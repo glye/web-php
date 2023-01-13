@@ -164,11 +164,11 @@ function get_branch_support_state($branch) {
 }
 
 function branches_to_show() {
-    // Basically: show all 1.13+ branches with EOL dates > min_date().
+    // Show all branches with EOL dates > min_date().
     $branches = [];
 
     foreach (get_all_branches() as $branch => $version) {
-        if (/*version_compare($branch, '1.13', 'ge') &&*/ get_branch_security_eol_date($branch) > min_date()) {
+        if (get_branch_security_eol_date($branch) > min_date()) {
             $branches[$branch] = $version;
         }
     }
