@@ -16,6 +16,7 @@ $BRANCHES = [
         'stable' => '2019-12-01',
         'security' => '2019-12-01',
         'release-type' => 'lts',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ez_platform_v1.7.0_lts/',
     ],
     '1.13' => [
         'name' => 'eZ Platform 2018 LTS (v1.13)',
@@ -23,6 +24,7 @@ $BRANCHES = [
         'stable' => '2020-12-01',
         'security' => '2021-12-01',
         'release-type' => 'lts',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ez_platform_v1.13.0_lts/',
     ],
     '2.5' => [
         'name' => 'eZ Platform 2019 LTS (v2.5)',
@@ -30,6 +32,7 @@ $BRANCHES = [
         'stable' => '2022-03-01',
         'security' => '2024-03-01',
         'release-type' => 'lts',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ez_platform_v2.5/',
     ],
     '3.3' => [
         'name' => 'Ibexa DXP 3.3 LTS',
@@ -37,6 +40,7 @@ $BRANCHES = [
         'stable' => '2024-01-01',
         'security' => '2026-01-01',
         'release-type' => 'lts',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ibexa_dxp_v3.3/',
     ],
     '4.1' => [
         'name' => 'Ibexa DXP 4.1 FT',
@@ -44,6 +48,7 @@ $BRANCHES = [
         'stable' => '2022-06-01',
         'security' => '2022-08-01',
         'release-type' => 'ft',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ibexa_dxp_v4.1/',
     ],
     '4.2' => [
         'name' => 'Ibexa DXP 4.2 FT',
@@ -52,6 +57,7 @@ $BRANCHES = [
         'security' => '2022-12-01',
         'release-type' => 'ft',
         'release-type' => 'ft',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ibexa_dxp_v4.2/',
     ],
     '4.3' => [
         'name' => 'Ibexa DXP 4.3 FT',
@@ -59,6 +65,7 @@ $BRANCHES = [
         'stable' => '2023-02-01',
         'security' => '2023-03-01',
         'release-type' => 'ft',
+        'release-url' => 'https://doc.ibexa.co/en/latest/release_notes/ibexa_dxp_v4.3/',
     ],
     '4.4' => [
         'name' => 'Ibexa DXP 4.4 FT',
@@ -66,6 +73,7 @@ $BRANCHES = [
         'stable' => '2023-05-01',
         'security' => '2023-06-01',
         'release-type' => 'ft',
+        'release-url' => false,
     ],
     '4.5' => [
         'name' => 'Ibexa DXP 4.5 FT',
@@ -73,6 +81,7 @@ $BRANCHES = [
         'stable' => '2023-07-01',
         'security' => '2023-08-01',
         'release-type' => 'ft',
+        'release-url' => false,
     ],
     '4.6' => [
         'name' => 'Ibexa DXP 4.6 LTS',
@@ -80,6 +89,7 @@ $BRANCHES = [
         'stable' => '2026-06-01',
         'security' => '2028-06-01',
         'release-type' => 'lts',
+        'release-url' => false,
     ],
 ];
 
@@ -133,6 +143,16 @@ function get_branch_release_type($branch) {
 
     if (isset($branches[$branch]['release-type'])) {
         return $branches[$branch]['release-type'];
+    }
+
+    return false; // TODO log/exception
+}
+
+function get_branch_release_url($branch) {
+    $branches = get_all_branches();
+
+    if (isset($branches[$branch]['release-url'])) {
+        return $branches[$branch]['release-url'];
     }
 
     return false; // TODO log/exception
@@ -219,7 +239,7 @@ $years = iterator_to_array(new DatePeriod(min_date(), new DateInterval('P1Y'), m
 $width = $margin_left + $margin_right + ((count($years) - 1) * $year_width);
 $height = $header_height + $footer_height + (count($branches) * ($branch_height + $branch_margin_height) + $branch_margin_height);
 ?>
-<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 <?php echo $width ?> <?php echo $height ?>" width="<?php echo $width ?>" height="<?php echo $height ?>">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0 0 <?php echo $width ?> <?php echo $height ?>" width="<?php echo $width ?>" height="<?php echo $height ?>">
 	<style type="text/css">
 		<![CDATA[
 			text {
@@ -269,6 +289,18 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 				text-anchor: middle;
 			}
 
+			.branches a:hover,
+			.branch-labels a:hover {
+				stroke-width: 3px;
+				stroke: #007bff;
+				cursor: pointer;
+				text-decoration: none;
+			}
+
+			.branch-labels a:hover text {
+				stroke-width: 0;
+			}
+
 			.branch-dividers line {
 				stroke: #151c25;
 				stroke-dasharray: 7,7;
@@ -277,8 +309,9 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 
 			.today line {
 				stroke: #db0032;
-				stroke-dasharray: 7,7;
+				stroke-dasharray: 7,12;
 				stroke-width: 3px;
+				stroke-linecap: round;
 			}
 
 			.today text {
@@ -316,11 +349,16 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 	<!-- Branch labels -->
 	<g class="branch-labels">
 		<?php foreach ($branches as $branch => $version): ?>
+			<?php
+			$x_release_url = get_branch_release_url($branch);
+			?>
 			<g class="<?php echo get_branch_support_state($branch) ?>">
-				<rect x="0" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo 0.8 * $margin_left ?>" height="<?php echo $branch_height ?>" />
-				<text x="<?php echo 0.4 * $margin_left ?>" y="<?php echo $version['top'] + $branch_margin_height + (0.5 * $branch_height) ?>">
-					<?php echo htmlspecialchars(get_branch_name($branch)) ?>
-				</text>
+				<?php if (is_string($x_release_url)): ?><a xlink:href="<?php echo $x_release_url ?>" target="_blank"><?php endif ?>
+					<rect x="0" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo 0.8 * $margin_left ?>" height="<?php echo $branch_height ?>" />
+					<text x="<?php echo 0.4 * $margin_left ?>" y="<?php echo $version['top'] + $branch_margin_height + (0.5 * $branch_height) ?>">
+						<?php echo htmlspecialchars(get_branch_name($branch)) ?>
+					</text>
+				<?php if (is_string($x_release_url)): ?></a><?php endif ?>
 			</g>
 		<?php endforeach ?>
 	</g>
@@ -329,13 +367,16 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 	<g class="branches">
 		<?php foreach ($branches as $branch => $version): ?>
 			<?php
-            $x_release = date_horiz_coord(get_branch_release_date($branch));
-            $x_bug = date_horiz_coord(get_branch_bug_eom_date($branch));
-            $x_eol = date_horiz_coord(get_branch_security_eol_date($branch));
-            $x_release_type = get_branch_release_type($branch);
-            ?>
-			<rect class="stable-<?php echo $x_release_type ?>" x="<?php echo $x_release ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
-			<rect class="security-<?php echo $x_release_type ?>" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
+			$x_release = date_horiz_coord(get_branch_release_date($branch));
+			$x_bug = date_horiz_coord(get_branch_bug_eom_date($branch));
+			$x_eol = date_horiz_coord(get_branch_security_eol_date($branch));
+			$x_release_type = get_branch_release_type($branch);
+			$x_release_url = get_branch_release_url($branch);
+			?>
+			<?php if (is_string($x_release_url)): ?><a xlink:href="<?php echo $x_release_url ?>" target="_blank"><?php endif ?>
+				<rect class="stable-<?php echo $x_release_type ?>" x="<?php echo $x_release ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
+				<rect class="security-<?php echo $x_release_type ?>" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
+			<?php if (is_string($x_release_url)): ?></a><?php endif ?>
 		<?php endforeach ?>
 	</g>
 
