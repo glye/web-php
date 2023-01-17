@@ -68,7 +68,7 @@ $BRANCHES = [
     ],
     '4.5' => [
         'name' => 'Ibexa DXP 4.5 FT',
-        'release-date' => '2023-04-01',
+        'release-date' => '2023-04-13',
         'stable' => '2023-07-01',
         'security' => '2023-08-01',
         'release-type' => 'ft',
@@ -141,6 +141,7 @@ function get_branch_support_state($branch) {
     $initial = get_branch_release_date($branch);
     $bug = get_branch_bug_eom_date($branch);
     $security = get_branch_security_eol_date($branch);
+    $releaseType = get_branch_release_type($branch);
 
     if ($initial && $bug && $security) {
         $now = new DateTime;
@@ -150,11 +151,19 @@ function get_branch_support_state($branch) {
         }
 
         if ($now >= $bug) {
-            return 'security';
+            if ($releaseType === 'ft') {
+                return 'security-ft';
+            }
+
+            return 'security-lts';
         }
 
         if ($now >= $initial) {
-            return 'stable';
+            if ($releaseType === 'ft') {
+                return 'stable-ft';
+            }
+
+            return 'stable-lts';
         }
 
         return 'future';
@@ -213,36 +222,46 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 <?php echo $width ?> <?php echo $height ?>" width="<?php echo $width ?>" height="<?php echo $height ?>">
 	<style type="text/css">
 		<![CDATA[
-			@import url(/fonts/Fira/fira.css);
-
 			text {
-				fill: #333;
-				font-family: "Fira Sans", "Source Sans Pro", Helvetica, Arial, sans-serif;
+				fill: #151c25;
+				font-family: "Work Sans", sans-serif;
 				font-size: <?php echo (2 / 3) * $header_height; ?>px;
 			}
 
 			g.eol rect,
 			.branches rect.eol {
-				fill: #f33;
+				fill: #db0032;
 			}
 
 			g.eol text {
-				fill: white;
+				fill: #ffffff;
 			}
 
-			g.security rect,
-			.branches rect.security {
-				fill: #f93;
+			g.security-lts rect,
+			.branches rect.security-lts {
+				fill: #ffc107;
 			}
 
-			g.stable rect,
-			.branches rect.stable {
-				fill: #9c9;
+			g.security-ft rect,
+			.branches rect.security-ft {
+				fill: #ffc107;
+				filter: opacity(60%);
+			}
+
+			g.stable-lts rect,
+			.branches rect.stable-lts {
+				fill: #28a745;
+			}
+
+			g.stable-ft rect,
+			.branches rect.stable-ft {
+				fill: #28a745;
+				filter: opacity(60%);
 			}
 
 			g.future rect,
 			.branches rect.future {
-				fill: #ddd;
+				fill: #ffc7b8;
 			}
 
 			.branch-labels text {
@@ -251,18 +270,18 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 			}
 
 			.today line {
-				stroke: #f33;
+				stroke: #db0032;
 				stroke-dasharray: 7,7;
 				stroke-width: 3px;
 			}
 
 			.today text {
-				fill: #f33;
+				fill: #db0032;
 				text-anchor: middle;
 			}
 
 			.years line {
-				stroke: black;
+				stroke: #151c25;
 			}
 
 			.years text {
@@ -290,9 +309,10 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
             $x_release = date_horiz_coord(get_branch_release_date($branch));
             $x_bug = date_horiz_coord(get_branch_bug_eom_date($branch));
             $x_eol = date_horiz_coord(get_branch_security_eol_date($branch));
+            $x_release_type = get_branch_release_type($branch);
             ?>
-			<rect class="stable" x="<?php echo $x_release ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
-			<rect class="security" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
+			<rect class="stable-<?php echo $x_release_type ?>" x="<?php echo $x_release ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
+			<rect class="security-<?php echo $x_release_type ?>" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
 		<?php endforeach ?>
 	</g>
 
