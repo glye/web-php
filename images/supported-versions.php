@@ -264,8 +264,7 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 
 			g.security-ft rect,
 			.branches rect.security-ft {
-				fill: #ffc107;
-				filter: opacity(60%);
+				fill: #ffda6a;
 			}
 
 			g.stable-lts rect,
@@ -275,8 +274,7 @@ $height = $header_height + $footer_height + (count($branches) * ($branch_height 
 
 			g.stable-ft rect,
 			.branches rect.stable-ft {
-				fill: #28a745;
-				filter: opacity(60%);
+				fill: #7eca8f;
 			}
 
 			g.future rect,
