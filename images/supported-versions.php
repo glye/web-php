@@ -1,11 +1,12 @@
 <?php
 
 // Sizing constants.
-$margin_left = 270;
+$margin_left = 300;
 $margin_right = 50;
 $header_height = 24;
 $year_width = 120;
 $branch_height = 30;
+$branch_margin_height = 15;
 $footer_height = 24;
 
 $BRANCHES = [
@@ -182,7 +183,6 @@ function branches_to_show() {
         }
     }
 
-    ksort($branches);
     return $branches;
 }
 
@@ -193,7 +193,7 @@ function min_date() {
 
 function max_date() {
     $now = new DateTime('January 1');
-    return $now->add(new DateInterval('P5Y'));
+    return $now->add(new DateInterval('P6Y'));
 }
 
 function date_horiz_coord(DateTime $date) {
@@ -207,7 +207,7 @@ function date_horiz_coord(DateTime $date) {
 $branches = branches_to_show();
 $i = 0;
 foreach ($branches as $branch => $version) {
-    $branches[$branch]['top'] = $header_height + ($branch_height * $i++);
+    $branches[$branch]['top'] = $header_height + (($branch_height + $branch_margin_height) * $i++);
 }
 
 if (!isset($non_standalone)) {
@@ -217,7 +217,7 @@ if (!isset($non_standalone)) {
 
 $years = iterator_to_array(new DatePeriod(min_date(), new DateInterval('P1Y'), max_date()));
 $width = $margin_left + $margin_right + ((count($years) - 1) * $year_width);
-$height = $header_height + $footer_height + (count($branches) * $branch_height);
+$height = $header_height + $footer_height + (count($branches) * ($branch_height + $branch_margin_height) + $branch_margin_height);
 ?>
 <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 <?php echo $width ?> <?php echo $height ?>" width="<?php echo $width ?>" height="<?php echo $height ?>">
 	<style type="text/css">
@@ -261,12 +261,18 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 
 			g.future rect,
 			.branches rect.future {
-				fill: #ffc7b8;
+				fill: #e5e4e2;
 			}
 
 			.branch-labels text {
 				dominant-baseline: central;
 				text-anchor: middle;
+			}
+
+			.branch-dividers line {
+				stroke: #151c25;
+				stroke-dasharray: 7,7;
+				filter: opacity(30%);
 			}
 
 			.today line {
@@ -290,12 +296,29 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
 		]]>
 	</style>
 
+	<!-- Branch divider lines -->
+	<g class="branch-dividers">
+		<?php foreach ($branches as $branch => $version): ?>
+			<line x1="0" y1="<?php echo $version['top'] + ($branch_margin_height/2) ?>" x2="<?php echo $width ?>" y2="<?php echo $version['top'] + ($branch_margin_height/2) ?>" />
+		<?php endforeach ?>
+	</g>
+
+	<!-- Year lines -->
+	<g class="years">
+		<?php foreach ($years as $date): ?>
+			<line x1="<?php echo date_horiz_coord($date) ?>" y1="<?php echo $header_height ?>" x2="<?php echo date_horiz_coord($date) ?>" y2="<?php echo $header_height + (count($branches) * ($branch_height + $branch_margin_height)) ?>" />
+			<text x="<?php echo date_horiz_coord($date) ?>" y="<?php echo 0.8 * $header_height; ?>">
+				<?php echo $date->format('Y') ?>
+			</text>
+		<?php endforeach ?>
+	</g>
+
 	<!-- Branch labels -->
 	<g class="branch-labels">
 		<?php foreach ($branches as $branch => $version): ?>
 			<g class="<?php echo get_branch_support_state($branch) ?>">
-				<rect x="0" y="<?php echo $version['top'] ?>" width="<?php echo 0.8 * $margin_left ?>" height="<?php echo $branch_height ?>" />
-				<text x="<?php echo 0.4 * $margin_left ?>" y="<?php echo $version['top'] + (0.5 * $branch_height) ?>">
+				<rect x="0" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo 0.8 * $margin_left ?>" height="<?php echo $branch_height ?>" />
+				<text x="<?php echo 0.4 * $margin_left ?>" y="<?php echo $version['top'] + $branch_margin_height + (0.5 * $branch_height) ?>">
 					<?php echo htmlspecialchars(get_branch_name($branch)) ?>
 				</text>
 			</g>
@@ -311,18 +334,8 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
             $x_eol = date_horiz_coord(get_branch_security_eol_date($branch));
             $x_release_type = get_branch_release_type($branch);
             ?>
-			<rect class="stable-<?php echo $x_release_type ?>" x="<?php echo $x_release ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
-			<rect class="security-<?php echo $x_release_type ?>" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
-		<?php endforeach ?>
-	</g>
-
-	<!-- Year lines -->
-	<g class="years">
-		<?php foreach ($years as $date): ?>
-			<line x1="<?php echo date_horiz_coord($date) ?>" y1="<?php echo $header_height ?>" x2="<?php echo date_horiz_coord($date) ?>" y2="<?php echo $header_height + (count($branches) * $branch_height) ?>" />
-			<text x="<?php echo date_horiz_coord($date) ?>" y="<?php echo 0.8 * $header_height; ?>">
-				<?php echo $date->format('j M Y') ?>
-			</text>
+			<rect class="stable-<?php echo $x_release_type ?>" x="<?php echo $x_release ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_bug - $x_release ?>" height="<?php echo $branch_height ?>" />
+			<rect class="security-<?php echo $x_release_type ?>" x="<?php echo $x_bug ?>" y="<?php echo $version['top'] + $branch_margin_height ?>" width="<?php echo $x_eol - $x_bug ?>" height="<?php echo $branch_height ?>" />
 		<?php endforeach ?>
 	</g>
 
@@ -332,8 +345,8 @@ $height = $header_height + $footer_height + (count($branches) * $branch_height);
         $now = new DateTime;
         $x = date_horiz_coord($now);
         ?>
-		<line x1="<?php echo $x ?>" y1="<?php echo $header_height ?>" x2="<?php echo $x ?>" y2="<?php echo $header_height + (count($branches) * $branch_height) ?>" />
-		<text x="<?php echo $x ?>" y="<?php echo $header_height + (count($branches) * $branch_height) + (0.8 * $footer_height) ?>">
+		<line x1="<?php echo $x ?>" y1="<?php echo $header_height ?>" x2="<?php echo $x ?>" y2="<?php echo $header_height + $branch_margin_height + (count($branches) * ($branch_height + $branch_margin_height)) ?>" />
+		<text x="<?php echo $x ?>" y="<?php echo $header_height + $branch_margin_height + (count($branches) * ($branch_height + $branch_margin_height)) + (0.8 * $footer_height) ?>">
 			<?php echo 'Today: ' . $now->format('j M Y') ?>
 		</text>
 	</g>
